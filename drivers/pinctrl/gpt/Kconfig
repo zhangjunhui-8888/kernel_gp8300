@@ -1,0 +1,3 @@
+config PINCTRL_GP8300
+	bool PINMUX_GP8300
+

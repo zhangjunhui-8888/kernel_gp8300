@@ -1,0 +1,232 @@
+/*
+ * dts file for GPT Chip2
+ *
+ * Copyright (C) 2018, General Processor Techologies Inc.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ */
+ 
+/dts-v1/;
+#include <dt-bindings/interrupt-controller/irq.h>
+/include/ "gpt_chip2.dtsi"
+#include <dt-bindings/clock/gpt,chip2polaris-clock.h>
+
+/ {
+	compatible = "gpt,polaris","gpt,polaris";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	interrupt-parent = <&pic>;
+
+	chosen {
+//		bootargs = "earlycon=pl011,mmio,0xF0010000 console=ttyAMA0,115200n8 init=/linuxrc";
+		bootargs = "earlycon=pl011,mmio,0xF0010000 root=/dev/mmcblk0p1 rw console=ttyAMA0,115200n8 init=/linuxrc rootwait";
+//		bootargs = "root=/dev/mmcblk0p3  rw console=ttyAMA0,115200n8 init=/linuxrc rootwait";
+//		bootargs = "console=ttyAMA0,115200n8 init=/linuxrc";
+	};
+
+	memory@0 {
+		device_type = "memory";
+	    	reg = <0x2 0x00000000 0x1 0x00000000>;
+	};
+
+        reserved-memory {
+                #address-cells = <2>;
+                #size-cells = <2>;
+                ranges;
+
+                smpboot@200000000 {
+                        reg = <0x2 0x00000000 0 0x8000>;
+                        no-map;
+                };
+                debugport@200008000 {
+                        reg = <0x2 0x00008000 0 0x8000>;
+                        no-map;
+                };
+		cma {
+				compatible = "shared-dma-pool";
+				reusable;
+				reg = <2 0x20000000 0 0x2000000>;
+				linux,cma-default;
+			};
+		};
+
+	serial0: serial@F0010000 {
+		compatible = "gpt,pl011";
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 16>;
+		reg = <0 0xf0010000 0 0x1000>;
+		clocks = <&sysctrl GPT_CHIP2POLARIS_APB_DIV>;
+		status = "ok";
+	};
+	
+	gt_timer {
+		compatible = "gpt,gpt-global-timer";
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 32>;
+		reg = <0 0xf0016000 0 0x100>;
+		clocks = <&sysctrl GPT_CHIP2POLARIS_APB_DIV>;
+		status = "ok";
+	};
+
+	gpio0:gpio@F0008000 {
+	           compatible = "gpt-gpio-0.0";
+	           interrupts = <0 0 0>,<0 0 1>,<0 0 2>,
+			     <0 0 3>,<0 0 4>,<0 0 5>,
+			     <0 0 6>,<0 0 7>;
+	           gpio-controller;
+	           #gpio-cells = <2>;
+	           reg = <0 0xf0008000 0 0x4000>;
+		   clocks = <&sysctrl GPT_CHIP2POLARIS_APB_DIV>;
+	           gpt,ngpio = <0x20>;
+	           gpt,base = <0x1>;
+	           interrupt-parent = <&mpic>;
+	           interrupt-controller;
+	           #interrupt-cells = <2>; 
+	           status ="ok";
+       };
+
+	video: video@00000000f0105000 {
+		compatible = "gpt-vdo,gpt";
+		reg = <0 0xf0105000 0 0x1000>;
+		status = "ok";
+	};
+
+	i2c0:i2c@F001c000 {
+		compatible = "gpt,i2c0.0";
+		interrupts = <0 0 44>;
+		#address-cells=<1>;
+		#size-cells = <0>;
+		reg = <0 0xf001c000 0 0x1000>;
+		clocks = <&sysctrl GPT_CHIP2POLARIS_APB_DIV>;
+		interrupt-parent = <&mpic>;
+		status ="ok";
+		adv7511@39 {
+			compatible = "adv7511,adv";
+			reg = <0x39>;
+			edid = <0x7e>;
+			cec = <0x78>;
+			status = "ok";
+		};
+	};
+
+	i2c1:i2c@F001d000 {
+		compatible = "gpt,i2c0.1";
+		interrupts = <0 0 45>;
+		#address-cells=<1>;
+		#size-cells = <0>;
+		reg = <0 0xf001d000 0 0x1000>;
+		clocks = <&sysctrl GPT_CHIP2POLARIS_APB_DIV>;
+		interrupt-parent = <&mpic>;
+		status ="ok";
+
+		adv7612@0x4c {
+			compatible = "adv7612,adv";
+			reg = <0x4C>;
+			/*for fpga*/
+			/*reset-gpios=<&gpio0 1 1>;*/
+			/*for gp8300soc*/
+			reset-gpios=<&gpio0 4 1>;
+			default-input = <0>;
+
+			port@0{
+				adv7612:endpoint{
+					res =<0x4c>;
+					remote-endpoint = <&port0_1>;
+					};
+			};
+		};
+	  };
+
+	  i2c2:i2c@F001e000 {
+	         compatible = "gpt,i2c0.2";
+		 interrupts = <0 0 46>;
+		 #address-cells=<1>;
+		 #size-cells = <0>;
+		 clocks = <&sysctrl GPT_CHIP2POLARIS_APB_DIV>;
+		 reg = <0 0xf001e000 0 0x1000>;
+	   	 interrupt-parent = <&mpic>;
+		 status ="ok";
+
+		nt99141@0x2a {
+			compatible = "nt99141,camera";
+			/* for fpga*/
+			/*reset-gpios = <&gpio0 2 1>;
+                        pwdw-gpios = <&gpio0 3 1>;*/
+			/*for gp8300soc*/
+			reset-gpios = <&gpio0 5 1>;
+                        pwdw-gpios = <&gpio0 6 1>;
+			res =<0x12>;
+			reg = <0x2a>;
+
+			port@0{
+				nt99141:endpoint{
+					res =<0x44>;
+					remote-endpoint = <&port0_2>;
+					};
+			};
+		};
+	};
+	gpt_vcap@0 {
+		compatible = "";
+		name = "gpt_vcap";
+		card_name = "Polaris Vcap";
+		#address-cells=<1>;
+		#size-cells = <0>;
+		reg = <0 0xf0102000 0 0x1000 0 0xf0103000 0 0x1000 0 0xf0104000 0 0x1000>;
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 52>,< 0 0 53>,<0 0 48 >;
+		status ="ok";
+		port@0{/*vcap0*/
+			port0_1:adv7612@0{
+				remote-endpoint = <&adv7612>;
+				};
+			port0_2:nt99141@1{
+				remote-endpoint = <&nt99141>;
+			};
+		};
+		/*
+		port@1{
+			port1_1:endpoint@0{
+				remote-endpoint = <&adv7612>;
+				};
+			port1_2:endpoint@1{
+				remote-endpoint = <&nt99141>;
+			};
+		};
+		port@2{
+			port2_1:endpoint@0{
+				remote-endpoint = <&adv7612>;
+				};
+			port2_2:endpoint@1{
+				remote-endpoint = <&nt99141>;
+			};
+		};
+		*/
+	};
+
+	vidmem:vidmem@00000000c0000000 {
+		compatible = "gpt-vidmem,gpt";
+		reg = <0 0xc0000000 0 0x80000>;
+		status = "ok";
+	};
+	sdhci@f0110000 {
+		compatible = "gpt,arasan";
+		reg = <0 0xf0110000 0 0x10000>;
+		clock-names = "gptsd";
+		clocks = <&sysctrl GPT_CHIP2POLARIS_SD_DIV>;
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 61>;
+		bus-width = <1>;
+		max-frequency = <163000000>;
+	/*sdhci,auto-cmd12;*/
+	};
+	gpt_pinctrl@f0000200 {
+		compatible = "";
+		name = "gpt_pinctrl";
+		reg = <0 0xf0000200 0 0x4>;
+		status ="ok";
+	};
+};

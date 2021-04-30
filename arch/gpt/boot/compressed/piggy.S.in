@@ -1,0 +1,6 @@
+	.section .piggydata
+	.globl	input_data
+input_data:
+	.incbin	"arch/gpt/boot/compressed/piggy.DECOMP_SUFFIX"
+	.globl	input_data_end
+input_data_end:

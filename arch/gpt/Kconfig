@@ -1,0 +1,269 @@
+#
+# For a description of the syntax of this configuration file,
+# see Documentation/kbuild/kconfig-language.txt.
+#
+
+config GPT 
+	def_bool y
+	select 64BIT
+	select OF
+	select OF_EARLY_FLATTREE
+	select OF_RESERVED_MEM
+	select IRQ_DOMAIN
+	select SPARSE_IRQ
+	select HANDLE_DOMAIN_IRQ
+	select HAVE_MEMBLOCK
+	select NO_BOOTMEM
+	select COMMON_CLK
+	select ARCH_REQUIRE_GPIOLIB
+	select HAVE_ARCH_TRACEHOOK
+	select HAVE_DEBUG_STACKOVERFLOW
+        select HAVE_FUNCTION_TRACER
+        select HAVE_FUNCTION_GRAPH_TRACER
+        select HAVE_DYNAMIC_FTRACE
+        select HAVE_FTRACE_MCOUNT_RECORD
+	select HAVE_KERNEL_GZIP
+        select HAVE_KERNEL_BZIP2
+        select HAVE_KERNEL_LZO
+        select HAVE_KERNEL_LZMA
+	select GENERIC_IRQ_CHIP
+	select GENERIC_IRQ_PROBE
+	select GENERIC_IRQ_SHOW
+	select CLONE_BACKWARDS
+	select HAVE_DMA_CONTIGUOUS
+	select HAVE_PERF_EVENTS
+	select HAVE_HW_BREAKPOINT if PERF_EVENTS
+	select GENERIC_EARLY_IOREMAP
+	select GENERIC_IOMAP
+	select GENERIC_ALLOCATOR
+	select GENERIC_CPU_DEVICES
+	select GENERIC_CLOCKEVENTS
+	select GENERIC_CLOCKEVENTS_BROADCAST if SMP
+	select ARCH_HAS_TICK_BROADCAST if GENERIC_CLOCKEVENTS_BROADCAST
+	select GENERIC_STRNCPY_FROM_USER
+	select GENERIC_STRNLEN_USER
+	select GENERIC_SMP_IDLE_THREAD
+	select GENERIC_TIME_VSYSCALL
+	select MODULES_USE_ELF_RELA
+	select HAVE_DEBUG_STACKOVERFLOW
+	select GPT_PIC
+	select BUILDTIME_EXTABLE_SORT
+	select ARCH_WANT_FRAME_POINTERS
+	select HAVE_GPT_WATCHDOG if WATCHDOG
+
+config MMU
+	def_bool y
+
+config UID16
+	def_bool y
+
+config RWSEM_GENERIC_SPINLOCK
+	def_bool y
+
+config RWSEM_XCHGADD_ALGORITHM
+	def_bool n
+
+config GENERIC_HWEIGHT
+	def_bool y
+
+config NO_IOPORT_MAP
+	def_bool y
+
+#config NO_DMA
+#	def_bool n
+
+config HAVE_DMA_ATTRS
+        def_bool y
+
+config ARCH_DMA_ADDR_T_64BIT
+        def_bool y
+
+config TRACE_IRQFLAGS_SUPPORT
+        def_bool n
+
+config STACKTRACE_SUPPORT
+        def_bool y
+
+config WISHBONE_BUS_BIG_ENDIAN
+	def_bool y
+
+config GENERIC_CALIBRATE_DELAY
+	bool
+	default y
+
+config ZONE_DMA
+        def_bool y
+
+# For now, use generic checksum functions
+#These can be reimplemented in assembly later if so inclined
+config GENERIC_CSUM
+        def_bool y
+
+config CHECK_KERNEL_STACK_ADDR
+        def_bool n
+
+config FIX_EARLYCON_MEM
+        def_bool y
+
+source "init/Kconfig"
+
+source "kernel/Kconfig.freezer"
+
+menu "Platform Selection"
+
+source	arch/gpt/mach-chip2/Kconfig
+
+#New platform adds here
+
+endmenu
+
+menu "Kernel Features"
+
+choice
+	prompt "CPU type"
+	default CPU_GPT_CHIP2
+
+config CPU_GPT_CHIP2
+	bool "64-bit GPT CHIP2 CPU"
+	help
+		Choice this option to build a kernel for chip2 architecture.
+endchoice
+
+config 64BIT
+	bool "64-bit kernel"
+	help
+	 Enable 64 bit operation
+
+config	GPT_OUT_OF_ORDER_OFF
+	bool "Turn off CPU out of order"
+	default n
+
+config SMP
+	bool "Multi-Processing support"
+	help
+	  Enables SMP support in the kernel.
+
+config NR_CPUS
+	int "Maximum number of CPUs" if SMP
+	range 2 4 if SMP
+	default "1" if !SMP
+	default "2" if SMP
+	help
+	  This allows you to specify the maximum number of CPUs which this
+	  kernel will support.  The maximum supported value is 4 and the
+	  minimum value which makes sense is 2.
+
+config VDSO
+        bool "Enable VDSO for acceleration of some system calls"
+        default y
+        help
+          Place in the process address space an ELF shared object
+          providing fast implementations of gettimeofday and
+          clock_gettime.  Systems that implement the ARM architected
+          timer will receive maximum benefit.
+
+          You must have glibc 2.22 or later for programs to seamlessly
+          take advantage of this.
+
+source "kernel/Kconfig.hz"
+source "kernel/Kconfig.preempt"
+source "mm/Kconfig"
+config ARCH_FLATMEM_ENABLE
+        def_bool y
+        depends on !NUMA
+
+config ARCH_SPARSEMEM_ENABLE
+        def_bool y
+        select SPARSEMEM_STATIC
+
+config ARCH_SPARSEMEM_DEFAULT
+        def_bool y
+
+config ARCH_SELECT_MEMORY_MODEL
+        def_bool y
+
+config HAVE_ARCH_PFN_VALID
+        def_bool ARCH_HAS_HOLES_MEMORYMODEL || !SPARSEMEM
+
+config GPT_BUILTIN_DTB
+	bool "Use builtin device tree blob"
+	help
+	  Uses the builtin device tree blob.
+
+config GPT_BUILTIN_DTB_NAME
+        string "Built in DTB"
+	default ""
+        depends on GPT_BUILTIN_DTB
+        help
+          Set the name of the DTB to embed (leave blank to pick one
+          automatically based on kernel configuration).
+
+config PHYSICAL_START
+	hex "Physical address where the kernel is loaded"
+	default "0x80000000"
+	  help
+	  This gives the physical address where the kernel is loaded.
+
+config DBG_MONITOR
+    bool "debug monitor for kernel"
+    help
+      Enables debug monitor support in the kernel.
+
+config CMDLINE
+        string "Default kernel command string"
+        default ""
+        help
+          On some architectures there is currently no way for the boot loader
+          to pass arguments to the kernel. For these architectures, you should
+          supply some command-line options at build time by entering them
+          here.
+
+config CMDLINE_FORCE
+	bool "Always use the default kernel command string"
+	help
+	  Always use the default kernel command string, even if the boot
+	  loader passes other arguments to the kernel.
+	  This is useful if you cannot or don't want to change the
+	  command-line options your boot loader passes to the kernel.
+
+
+
+endmenu
+
+menu "Executable file formats"
+
+source "fs/Kconfig.binfmt"
+
+endmenu
+
+menu "Bus Support"
+
+config PCI
+	bool "PCI support"
+	help
+	   Find out whether you have a PCI motherBoard, PCI is the name of a bus
+	   system, i.e. the way the CPU talks to the other stuff inside you box.
+	   Other bus systems are ISA, EISA, MicroChannel (MCA) or VESA.
+	   If you have PCI, say Y, otherwise N.
+
+source "drivers/pci/Kconfig"
+source "drivers/pci/pcie/Kconfig"
+endmenu
+
+source "net/Kconfig"
+
+source "drivers/Kconfig"
+
+source "fs/Kconfig"
+
+source "security/Kconfig"
+
+source "crypto/Kconfig"
+
+source "lib/Kconfig"
+
+#menu "Kernel hacking"
+
+source "arch/gpt/Kconfig.debug"
+
+#endmenu

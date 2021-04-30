@@ -1,0 +1,53 @@
+config ARCH_GPT_CHIP2
+        bool "GPT Chip2 Platforms/SoCs"
+        depends on CPU_GPT_CHIP2
+        select APIU
+        select GPT_PIC
+        select GPT_MPIC
+        select CHECK_KERNEL_STACK_ADDR
+        help
+        Support for platforms based on GPT Chip2.
+
+config APIU
+        bool
+
+config GPT_VIDMEM
+        bool
+        select VIDMEM
+
+config DDR2DDR_COPY
+	bool "Enable vidmem dma ddr to ddr copy"
+	depends on GPT_VIDMEM
+
+if ARCH_GPT_CHIP2
+choice
+	prompt "GPT Chip2 Boards"
+	default PLAT_GPT_CHIP2_SIM
+
+config PLAT_GPT_CHIP2_SIM
+	bool  "GPT Chip2 Simulation"
+	select GPT_SIMULATOR_ERRTA1
+	select GPT_SIMULATOR_ERRTA2
+	select GPT_SIMULATOR_ERRTA3 if SMP
+	
+config PLAT_GPT_CHIP2_CHASE_FPGA
+	bool  "GPT Chip2 Chase FPGA Board"
+
+config PLAT_GPT_CHIP2_POLARIS_FPGA
+        bool  "GPT Chip2 Polaris FPGA Board"
+
+config PLAT_GPT_CHIP2_POLARIS_EVK
+        bool  "GPT Chip2 Polaris Evk Board"
+	select GPT_VIDMEM
+
+config PLAT_GPT_CHIP2_POLARIS_DVB
+        bool  "GPT Chip2 Polaris Dvb Board"
+	select GPT_VIDMEM
+config PLAT_GPT_CHIP2_POLARIS_CHAOKONG
+        bool  "GPT Chip2 Polaris ChaoKong Board"
+	select GPT_VIDMEM
+
+endchoice
+
+endif
+

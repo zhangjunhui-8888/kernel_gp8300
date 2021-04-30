@@ -1,0 +1,5 @@
+::sysinit:/etc/init.d/rcS
+ttyAMA0::respawn:/bin/sh
+ttyAMA0::askfirst:/bin/sh
+::shutdown:/bin/umount -a -r
+::shutdown:/sbin/swapoff -a

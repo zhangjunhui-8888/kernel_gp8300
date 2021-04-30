@@ -1,0 +1,62 @@
+/*
+ * dts file for GPT Chip2 simulation
+ *
+ * Copyright (C) 2018, General Processor Techologies Inc.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ */
+ 
+/dts-v1/;
+/include/ "gpt_chip2.dtsi"
+#include <dt-bindings/clock/gpt,chip2dummy-clock.h>
+
+/ {
+	compatible = "gpt,sim", "gpt,sim";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	interrupt-parent = <&pic>;
+
+        chosen {
+        };
+
+
+	memory@0 {
+		device_type = "memory";
+	    	reg = <0x2 0x00000000 0x0 0x60000000>;
+	};
+	
+        reserved-memory {
+                #address-cells = <2>;
+                #size-cells = <2>;
+                ranges;
+
+                smpboot@200000000 {
+                        reg = <0x2 0x00000000 0 0x8000>;
+                        no-map;
+                };
+                debugport@200008000 {
+                        reg = <0x2 0x00008000 0 0x8000>;
+                        no-map;
+                };                
+        };
+
+	serial0: serial@F0010000 {
+		compatible = "gpt,pl011";
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 16>;
+		reg = <0 0xf0010000 0 0x1000>;
+		clocks = <&sysctrl GPT_CHIP2DUMMY_APB>;
+		status = "ok";
+	};
+	gt_timer {
+		compatible = "gpt,gpt-global-timer";
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 32>;
+		reg = <0 0xf0016000 0 0x100>;
+		clocks = <&sysctrl GPT_CHIP2DUMMY_APB>;
+		status = "ok";
+	};
+};

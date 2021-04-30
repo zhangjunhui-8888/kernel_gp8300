@@ -1,0 +1,542 @@
+/*
+ * dts file for GPT Chip2
+ *
+ * Copyright (C) 2018, General Processor Techologies Inc.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ */
+ 
+/dts-v1/;
+/include/ "gpt_chip2.dtsi"
+#include <dt-bindings/interrupt-controller/irq.h>
+#include <dt-bindings/clock/gpt,chip2polaris-clock.h>
+#include <dt-bindings/gpio/gpio.h>
+
+/ {
+	compatible = "gpt,polaris","gpt,polaris";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	interrupt-parent = <&pic>;
+
+	chosen {
+	};
+
+	memory@0 {
+		device_type = "memory";
+	    	reg = <0x2 0x00000000 0x0 0x80000000>;
+	};
+
+        reserved-memory {
+                #address-cells = <2>;
+                #size-cells = <2>;
+                ranges;
+
+                smpboot@200000000 {
+                        reg = <0x2 0x00000000 0 0x8000>;
+                        no-map;
+                };
+                debugport@200008000 {
+                        reg = <0x2 0x00008000 0 0x8000>;
+                        no-map;
+                };  
+                display_reserved: framebuffer@220000000 {
+                        reg = <0x2 0x20000000 0 0x2000000>;
+                };
+
+           
+		cma {
+				compatible = "shared-dma-pool";
+				reusable;
+				reg = <2 0x22000000 0 0x2000000>;
+				linux,cma-default;
+			};
+                gpt-gsnn0@30000000{
+                        reg = < 0x2 0x60000000 0x0 0x10000000>;
+                        no-map;
+                };
+                gpt-gsnn1@40000000{
+                        reg = < 0x2 0x70000000 0x0 0x10000000>;
+                        no-map;
+                };
+
+
+	};
+
+	aliases {
+		spi0 = &spi0;
+	};
+
+	pinctrl: pinctrl@f0000200 {
+		compatible = "gpt,gpt_pinctrl";
+		reg = <0 0xf0000200 0 0x4>;
+		#gpio-range-cells = <3>;
+
+		vcap1_d0_7:vcap1-d0-7 {
+			group = "VCAP1_D0_7";
+			mux-value = <0x1>; /*bit:2-0 func=1*/
+		};	
+		vcap1_d8_11:vcap1-d8-11 {
+			group = "SPI1";
+			mux-value = <0x2000>; /*bit: 14:12 func=1*/
+		};	
+		vcap1_d12_15:vcap1-d12-15 {
+			group = "SPI2";
+			mux-value = <0x10000>; /*bit: 17:15 func=1*/
+		};	
+		vcap1_d8_15:vcap1-d8-15 {
+			group = "VCAP2_D0_7";
+			mux-value = <0x18>; /*bit: 5:3 func=3*/
+		};	
+
+		vcap2_d0_7:vcap2-d0-7 {
+			group = "VCAP2_D0_7";
+			mux-value = <0x08>; /*bit: 5:3 func=1*/
+		};	
+		vcap2_d8_15:vcap2-d8-15 {
+			group = "VOUT_D8_15";
+			mux-value = <0x0c0>; /*bit:8:6 func=3*/
+		};	
+		vout_d8_15:vout-d8-15 {
+			group = "VOUT_D8_15";
+			mux-value = <0x40>; /*bit:8:6 func=1*/
+		};
+		spi_0:spi-0 {
+			group = "SPI0";
+			mux-value = <0x200>; /*bit:11:9 func=1*/
+		};
+		spi_1:spi-1{
+			group = "SPI1";
+			mux-value = <0x1000>; /*bit: 14:12 func=1*/
+		};
+		spi_2:spi-2 {
+			group = "SPI2";
+			mux-value = <0x8000>; /*bit: 17:15 func=1*/
+		};
+		uart0_cts_rts:uart0-cts-rts {
+			group = "UART1";
+			mux-value = <0x80000>; /*bit: 20:18 func=2*/
+		};
+		uart0_dsr_dtr:uart0-dsr-dtr {
+			group = "UART2";
+			mux-value = <0x400000>; /*bit: 23:21 func=2*/
+		};
+		uart_1:uart-1 {
+			group = "UART1";
+			mux-value = <0x40000>; /*bit: 20:18 func=1*/
+		};
+		uart_2:uart-2{
+			group = "UART2";
+			mux-value = <0x200000>; /*bit: 23:21 func=1*/
+		};
+		i2c_1:i2c-1{
+			group = "I2C1";
+			mux-value = <0x1000000>; /*bit: 26:24 func=1*/
+		};
+		i2c_2:i2c-2{
+			group = "I2C2";
+			function = <1>;
+			mux-value = <0x8000000>; /*bit: 29:27 func=1*/
+		};
+		gpio_grp1:gpio-grp1{
+			group = "VCAP1_D0_7";
+			mux-value = <0x0>; /*bit:2-0 func=0*/
+		};
+		gpio_grp2:gpio-grp2{
+			group = "VCAP2_D0_7";
+			mux-value = <0x0>; /*bit: 5:3 func=0*/
+		};
+		gpio_grp3_0_3:gpio-grp3-0-3{
+			gpio_grp3_0_3_m1:gpio-grp3-0-3-m1{
+				group = "SPI0";
+				mux-value = <0x0>; /*bit:11:9 func=0*/
+			};
+			gpio_grp3_0_3_m2:gpio-grp3-0-3-m2{
+				group = "SPI1";
+				mux-value = <0>; /*bit: 14:12 func=0*/
+			};
+
+		};
+		gpio_grp3_4_7:gpio-grp3-4-7 {
+			group = "SPI2";
+			mux-value = <0>; /*bit: 17:15 func=0*/
+		};
+		gpio_grp3_4_5:gpio-grp3-4-5{
+			group = "I2C1";
+			mux-value = <0>; /*bit: 26:24 func=0*/
+		};
+		gpio_grp3_6_7:gpio-grp3-6-7{
+			group = "I2C2";
+			mux-value = <0>; /*bit: 29:27 func=0*/
+		};
+	};
+
+	/* On-chip memory */
+        ocram: ocram@c0000000 {
+                compatible = "mmio-vidmem";
+                reg = <0x0 0x20000000 0x0 0x800000>;
+        };
+
+        sram@f0106000 {
+                compatible = "gpt,vidmem";
+                reg = <0x0 0xf0106000 0x0 0x1000>;
+                ocram = <&ocram>;
+        };
+
+
+	serial0: serial@F0010000 {
+		compatible = "gpt,pl011";
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 16>;
+		reg = <0 0xf0010000 0 0x1000>;
+		clocks = <&sysctrl GPT_CHIP2POLARIS_APIU_DIV>;
+		status = "ok";
+	};
+
+	serial1: serial@F0011000 {
+		compatible = "gpt,pl011";
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 17>;
+		reg = <0 0xf0011000 0 0x1000>;
+		clocks = <&sysctrl GPT_CHIP2POLARIS_APIU_DIV>;
+		status = "ok";
+	};
+
+	timer0: timer@F00016000 {
+		compatible = "gpt,gpt-global-timer";
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 32>;
+		reg = <0 0xf0016000 0 0x100>;
+		clocks = <&sysctrl GPT_CHIP2POLARIS_APIU_DIV>;
+		status = "ok";
+	};
+
+	watchdog0:gpt-wdt@f0017000 {
+		compatible = "gpt,gpt-wdt";
+		reg = <0 0xf0017000 0 0x20>;
+		interrupt-parent = <&pic>;
+		/*interrupts = <0>;*/ /*watchdog change from 63 to 0.*/
+		clocks = <&sysctrl GPT_CHIP2POLARIS_L2C_DIV>;
+		timeout-sec = <30>;
+		status = "ok";
+	};
+
+	gpio0:gpio@f0008000 {
+		compatible = "gpt,gpio";
+		interrupts = <0 0 0>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		reg = <0 0xf0008000 0 0x1000>;
+		clocks = <&sysctrl GPT_CHIP2POLARIS_APIU_DIV>;
+		gpio-ranges = <&pinctrl 0 44 8>;
+		gpt,ngpio = <0x8>;
+		gpt,base = <0>;
+		interrupt-parent = <&mpic>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
+		status ="ok";
+	};
+
+	gpio1:gpio@f0009000 {
+		compatible = "gpt,gpio";
+		interrupts = <0 0 1>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		reg = <0 0xf0009000 0 0x1000>;
+		clocks = <&sysctrl GPT_CHIP2POLARIS_APIU_DIV>;
+		gpio-ranges = <&pinctrl 0 0 8>;
+		gpt,ngpio = <0x8>;
+		gpt,base = <8>;
+		interrupt-parent = <&mpic>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
+		status ="ok";
+	};
+
+	gpio2:gpio@f000a000 {
+		compatible = "gpt,gpio";
+		interrupts = <0 0 2>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		reg = <0 0xf000a000 0 0x1000>;
+		clocks = <&sysctrl GPT_CHIP2POLARIS_APIU_DIV>;
+		gpio-ranges = <&pinctrl 0 8 8>;
+		gpt,ngpio = <0x8>;
+		gpt,base = <16>;
+		interrupt-parent = <&mpic>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
+		status ="ok";
+	};
+
+	gpio3:gpio@f000b000 {
+		compatible = "gpt,gpio";
+		interrupts = <0 0 3>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		reg = <0 0xf000b000 0 0x1000>;
+		clocks = <&sysctrl GPT_CHIP2POLARIS_APIU_DIV>;
+		gpio-ranges = <&pinctrl 0 28 8>;
+		gpt,ngpio = <0x8>;
+		gpt,base = <24>;
+		pinctrl-names = "gpio_grp3";
+		pinctrl-0 = <&gpio_grp3_4_7>;
+		interrupt-parent = <&mpic>;
+		interrupt-controller;
+		#interrupt-cells = <2>;
+		status ="ok";
+	};
+
+	pciec:pcie-controller@f0400000 {
+		device_type = "pci";
+		compatible = "gpt,gpt-pciec";
+
+		reg = <0x0 0xf0400000 0 0x40000
+		       0x0 0xf0440000 0 0x40000
+		       0x1 0x00000000 0 0x10000>;
+		reg-names = "phy", "reg", "cfg";
+
+		bus-range = <0x00 0xff>;
+
+		#address-cells = <3>;
+		#size-cells = <2>;
+		#interrupt-cells = <1>;
+
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 59>, <0 0 59>;
+		interrupt-names = "intr", "msi";
+
+		status = "ok";
+		interrupt-map-mask = < 0 0 0 7>;
+		ranges = < 0x01000000 0x0 0x20000000 0x1 0x20000000 0x0 0x10000000
+			   0x02000000 0x0 0x30000000 0x1 0x30000000 0x0 0x10000000 >;
+
+		dma-ranges = <0x42000000 0x0 0x0 0x2 0x0 0x1 0x0>;
+		interrupt-map = < 0x0 0x0 0x0 0x1 &pcie_intc 4
+				  0x0 0x0 0x0 0x2 &pcie_intc 5
+				  0x0 0x0 0x0 0x3 &pcie_intc 6
+				  0x0 0x0 0x0 0x4 &pcie_intc 7>;
+		pcie_intc: interrupt-controller {
+                      	interrupt-controller;
+                        interrupt-parent = <&mpic>;
+                        #address-cells = <0>;
+                        #interrupt-cells = <1>;
+                };
+	};
+
+	gptfb0: gpt-vdo@f0105000 {
+		compatible = "gpt,gpt-vdo";
+		clock-frequency = <1485000000>;
+		memory-region = <&display_reserved>;
+		reg = <0 0xf0105000 0 0x1000>;
+		pinctrl-names = "vout_d8_15";
+		pinctrl-0 = <&vout_d8_15>;
+		clk-src = <3>;
+		/*148MHz:72:1080P@30-8bit, 24:720P@60-8bit, 74MHz:4:720P@60-16bit, 0:1080P@30-16*/
+		mode = <72>;
+		status = "ok";
+	};
+
+	gptfb1: gpt-vfb@221000000 {
+        compatible = "gpt,gpt-vfb";
+        clock-frequency = <4965000>;
+        hactive = <240>;
+        vactive = <320>;
+        hback-porch = <1>;
+        hfront-porch = <33>;
+        vback-porch = <1>;
+        vfront-porch = <0>;
+        hsync-len = <5>;
+        vsync-len = <1>;
+        hsync-active = <1>;
+        vsync-active = <1>;
+
+        status = "ok";
+	};
+
+
+	i2c0:i2c@F001c000 {
+		compatible = "gpt,i2c0.0";
+		interrupts = <0 0 44>;
+		#address-cells=<1>;
+		#size-cells = <0>;
+		reg = <0 0xf001c000 0 0x1000>;
+		clocks = <&sysctrl GPT_CHIP2POLARIS_APIU_DIV>;
+        	i2c_scl_freq = <0x64>;
+		interrupt-parent = <&mpic>;
+		status ="ok";
+	};
+
+	i2c1:i2c@F001d000 {
+		compatible = "gpt,i2c0.1";
+		interrupts = <0 0 45>;
+		#address-cells=<1>;
+		#size-cells = <0>;
+		reg = <0 0xf001d000 0 0x1000>;
+		clocks = <&sysctrl GPT_CHIP2POLARIS_APIU_DIV>;
+        	i2c_scl_freq = <0x64>;
+		interrupt-parent = <&mpic>;
+		pinctrl-names = "i2c_1";
+		pinctrl-0 = <&i2c_1>;
+		status ="ok";
+
+	  };
+
+	  i2c2:i2c@F001e000 {
+	    compatible = "gpt,i2c0.2";
+		 interrupts = <0 0 46>;
+		 #address-cells=<1>;
+		 #size-cells = <0>;
+		 reg = <0 0xf001e000 0 0x1000>;
+	   	 clocks = <&sysctrl GPT_CHIP2POLARIS_APIU_DIV>;
+         	i2c_scl_freq = <0x64>;
+         	interrupt-parent = <&mpic>;
+		 pinctrl-names = "i2c_2";
+		 pinctrl-0 = <&i2c_2>;
+
+		status ="ok";
+		
+		at24@50 {
+			compatible = "at24,24c02";
+			pagesize = <8>;
+			reg=<0x50>;
+			status = "ok";
+		};
+
+		adv7511@39 {
+			compatible = "adv,adv7511";
+		   	/*
+			* The EDID page will be accessible on address 0x66 on the I2C
+			* bus. All other maps continue to use their default addresses.
+			*/
+			reg = <0x39>, <0x66>;
+			reg-names = "main", "edid";
+			/*
+			interrupt-parent = <&gpio3>;
+			interrupts = <2 IRQ_TYPE_EDGE_FALLING>;
+			inter-gpios = <&gpio3 2 GPIO_ACTIVE_HIGH>;
+			clocks = <&cec_clock>;
+			clock-names = "cec";
+			*/
+			/*1080p@30 8bit;1080P60 16bit*/
+			input-depth = <8>;
+			input-colorspace = "yuv422";
+			/*2x:8bit inputid only 3 or 4,dvb1080p@30;1x:16bit inputid 1 or 2,dvb1080p@60; */
+			input-clock = "2x";
+			/*8bit style=1; 16bit style=3*/
+			input-style = <1>;
+			/*dvb board left; evk board evenly*/
+			input-justification = "left";
+			clock-delay = <0>;
+			/*embedded-sync = "false"; */
+
+			edid = <0x7e>;
+			cec = <0x78>;
+			status = "ok";
+		};
+	};
+
+	gpt-vcap@0 {
+		compatible = "gpt,gpt-vcap";
+		name = "gpt-vcap";
+		card_name = "Polaris Vcap";
+		#address-cells=<1>;
+		#size-cells = <0>;
+		reg = <0 0xf0102000 0 0x1000 0 0xf0103000 0 0x1000 0 0xf0104000 0 0x1000>;
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 52>,< 0 0 53>,<0 0 48 >;
+		pinctrl-names = "vcap1_d0_15";
+		pinctrl-0 = <&vcap1_d0_7>, <&vcap1_d8_15>;
+
+		status ="ok";
+		};
+
+        gsnn0:gpt-gsnn0@30000000{
+                  compatible = "gpt,gpt-gsnn.0";
+                  reg = <0 0x30000000 0 0x40000 0x2 0x60000000 0x0 0x10000000>;
+                  interrupt-parent = <&mpic>;
+                  interrupts = <0 0 62>;
+                  status = "ok";
+        };
+
+        gsnn1:gpt-gsnn1@40000000{
+                  compatible = "gpt,gpt-gsnn.1";
+                  reg = <0 0x40000000 0 0x40000 0x2 0x70000000 0x0 0x10000000>;
+                  interrupt-parent = <&mpic>;
+                  interrupts = <0 0 63>;
+                  status = "ok";
+        };
+
+	cdma:cdma@e2000000 {
+        compatible = "gpt,cpu-dma";
+        reg = <0 0xc0000000 0 0x800>;
+		interrupt-parent = <&pic>;
+		interrupts = <56>;
+        status = "ok";
+
+		cdev1@0x0{
+		   compatible ="gpt, cdev1";
+		   status ="ok";
+        };
+		cdev2@0x1{
+		   compatible ="gpt, cdev2";
+		   status ="ok";
+        };
+		cdev3@0x2{
+		   compatible ="gpt, cdev3";
+		   status ="ok";
+        };
+		cdev4@0x3{
+		   compatible ="gpt, cdev4";
+		   status ="ok";
+        };
+    };
+
+	sdhci@f0110000 {
+		compatible = "gpt,sdhci-8.9a";
+		reg = <0 0xf0110000 0 0x10000>;
+		signal-gpios =<&gpio0 0 1>;
+		power-gpios =<&gpio0 1 1>;
+
+		clock-names = "gptsd";
+		clocks = <&sysctrl GPT_CHIP2POLARIS_SD_DIV>;
+
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 61>;
+
+		/****sd card:4  emmc:8****/
+		bus-width = <4>;
+		/****sd card:0  emmc:1****/
+		slot = <0>;
+
+		/****sd card****
+		cap-sd-highspeed;
+		sd-uhs-sdr104;
+		*/
+		/****emmc****
+		cap-mmc-highspeed;
+		mmc-hs200-1_8v;
+		mmc-ddr-1_8v;
+		*/
+		sd-uhs-sdr104;
+		no-1-8-v;
+	};
+
+	spi0:spi@F0018000 {
+		compatible = "gpt,spi0.0";
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 28>;
+		#address-cells=<1>;
+		#size-cells = <0>;
+  		reg = <0 0xf0018000 0 0x1000>;
+		/*support the num of the spi device*/
+    	gpt,num-ss-bits = <2>;
+		gpt,num-transfer-bits = <0x08>;
+		pinctrl-names = "spi_0";
+		pinctrl-0 = <&spi_0>;
+		clocks = <&sysctrl GPT_CHIP2POLARIS_APIU_DIV>;
+		status ="ok";
+	};
+};

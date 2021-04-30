@@ -1,0 +1,38 @@
+/dts-v1/;
+
+/ {
+	description = "Simple image with single Linux kernel and FDT blob";	
+	#address-cells = <2>;
+
+	images{
+
+		kernel@gpt {
+			 description = "GPT Linux kernel";
+			 data = /incbin/("../arch/gpt/boot/vmlinux.bin");
+			 type = "kernel";
+			 arch = "gpt";
+			 os = "linux";
+			 compression = "none";
+			 load = <0x2 0x00010000>;
+			 entry = <0x2 0x00010000>;
+		};
+
+		fdt@gpt	{
+		      	 description = "Flattened Device Tree blob";
+			 data = /incbin/("../arch/gpt/boot/dts/gpt_gp8300_dvb.dtb");
+			 type = "flat_dt";
+			 arch = "gpt";
+			 compression = "none";
+		};
+	};
+
+	configurations {
+		default = "conf@gpt";	
+		conf@gpt {
+		       description = "Boot Linux kernel with FDT blob";
+		       kernel = "kernel@gpt";
+		       fdt = "fdt@gpt";
+		};
+	};
+
+};

@@ -1,0 +1,18 @@
+config VIDEO_GPT_VCAP
+	tristate "GPT VCAP video capture driver"
+	help
+	  Enables gpt vcap module used for capture devices.
+	  This module is used for capture on GPG Polaris 
+	  SoCs.
+config VIDEO_GPT_VCAP_2CHANNEL 
+	tristate "GPT VCAP 2CHANNEL video capture driver"
+	help
+	  Enables gpt vcap module used for capture two channel video for /dev/video0 .
+	  This module is used for capture on GPG Polaris 
+	  SoCs.
+
+config  DIRECT_DISPLAY
+	tristate "DIRECT_DISPLAY"
+	help
+	  This is support direct vcap frame to display if you compile vcap_capture as kernel module,you mast use "*" take the place of "M"
+

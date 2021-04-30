@@ -1,0 +1,462 @@
+/*
+ * dts file for GPT Chip2 FPGA
+ *
+ * Copyright (C) 2018, General Processor Techologies Inc.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ */
+ 
+/dts-v1/;
+#include <dt-bindings/interrupt-controller/irq.h>
+/include/ "gpt_polaris.dtsi"
+#include <dt-bindings/clock/gpt,chip2polaris-clock.h>
+
+/ {
+	compatible = "gpt,fpga", "gpt,polaris";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	interrupt-parent = <&pic>;
+
+	chosen {
+		//bootargs = "root=179:2 rw console=ttyAMA0,230400n8 init=/linuxrc rootdelay=10";
+		bootargs = "console=ttyAMA0,230400n8 init=/linuxrc";
+	};
+
+	memory@0 {
+		device_type = "memory";
+	    	reg = <2 0x00000000 0 0x60000000>; // 1.5G
+	};
+
+
+	reserved-memory {
+			#address-cells = <2>;
+			#size-cells = <2>;
+			ranges;
+
+                smpboot@80000000 {
+                        reg = <2 0x00000000 0 0x8000>;
+                        no-map;
+                };
+                debugport@80008000 {
+                        reg = <2 0x00008000 0 0x8000>;
+                        no-map;
+                };                
+		cma {
+				compatible = "shared-dma-pool";
+				reusable;
+				reg = <2 0x20000000 0 0x2000000>;
+				linux,cma-default;
+			};
+		};
+
+	serial0: serial@F0010000 {
+		compatible = "gpt,pl011";
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 16>;
+		reg = <0 0xf0010000 0 0x1000>;
+/*		clocks = <&sysctrl GPT_CHIP2CHASE_APB>;*/
+		clocks = <&refclk25mhz>;
+		clock-names = "apb_pclk";
+		status = "ok";
+	};
+	gpio0:gpio@F0008000 {
+		compatible = "gpt-gpio-0.0";
+		interrupts = <0 0 0>,<0 0 1>,<0 0 2>,
+			     <0 0 3>,<0 0 4>,<0 0 5>,
+			     <0 0 6>,<0 0 7>;
+		gpio-controller;
+		#gpio-cells = <2>;
+		reg = <0 0xf0008000 0 0x8000>;
+/*		clocks = <&sysctrl GPT_CHIP2CHASE_APB>;*/
+		clocks=<&refclk25mhz>;
+		gpt,ngpio = <0x40>;
+		gpt,base = <0x1>;
+		interrupt-parent = <&mpic>;
+		interrupt-controller;
+		#interrupt-cells = <2>; /*0:num,1:p*/
+		status ="ok";
+	};
+
+	pciec:pcie-controller@f0400000 {
+		device_type = "pci";
+		compatible = "gpt,gpt-pciec";
+
+		reg = <0x0 0xf0400000 0 0x40000
+		       0x0 0xf0440000 0 0x40000
+		       0x1 0x00000000 0 0x10000>;
+		reg-names = "phy", "reg", "cfg";
+
+		bus-range = <0x00 0xff>;
+
+		#address-cells = <3>;
+		#size-cells = <2>;
+		#interrupt-cells = <1>;
+
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 59>;
+		interrupt-names = "intr";
+
+		perst-gpios=<&gpio0 4 1>;
+		isolate-gpios=<&gpio0 5 1>;
+
+		ranges = <0x01000000 0x0 0x00010000 0x1 0x00010000 0x0 0x00010000
+			  0x02000000 0x0 0x00020000 0x1 0x00020000 0x0 0x80000000>;
+
+		dma-ranges = <0x02000000 0x0 0x0 0x2 0x0 0x1 0x0>;
+
+		interrupt-map = < 0 0 0 0 &mpic 0 0 0 0 59>;
+		interrupt-map-mask = < 0 0 0 0>;
+
+		status = "ok";
+	};
+
+	video: video@00000000f0105000 {
+		compatible = "gpt-vdo,gpt";
+		reg = <0 0xf0105000 0 0x1000>;
+		status = "ok";
+	};
+
+        gsnn0:gsnn@e2000000{
+                compatible = "gpt,gpt-gsnn.0";
+                reg = <0 0xc0000000 0 0x40000
+                        0x2 0x30000000 0x0 0x10000000>;
+                interrupts = <0 0 62>;
+                interrupt-parent = <&mpic>;
+                status = "ok";
+        };
+
+	i2c1:i2c@F001c000 {
+		compatible = "gpt,i2c0.0";
+		interrupts = <0 0 44>;
+		#address-cells=<1>;
+		#size-cells = <0>;
+		reg = <0 0xf001c000 0 0x1000>;
+/*		clocks = <&sysctrl GPT_CHIP2CHASE_APB>;*/
+		clocks=<&refclk25mhz>;
+		interrupt-parent = <&mpic>;
+		status ="ok";
+		adv7511@39 {
+			compatible = "adv7511,adv";
+			reg = <0x39>;
+			edid = <0x7e>;
+			cec = <0x78>;
+			status = "ok";
+		};
+	};
+
+	i2c2:i2c@F001d000 {
+		compatible = "gpt,i2c0.1";
+		interrupts = <0 0 45>;
+		#address-cells=<1>;
+		#size-cells = <0>;
+		reg = <0 0xf001d000 0 0x1000>;
+		clocks=<&refclk25mhz>;
+		interrupt-parent = <&mpic>;
+		status ="ok";
+
+		adv7612@0x4c {
+			compatible = "adv7612,adv";
+			reg = <0x4C>;
+			reset-gpios=<&gpio0 1 1>;
+			default-input = <0>;
+
+			port@0{
+				adv7612:endpoint{
+					res =<0x4c>;
+					remote-endpoint = <&port0_1>;
+					};
+			};
+		};
+	  };
+
+	  i2c3:i2c@F001e000 {
+	         compatible = "gpt,i2c0.2";
+		 interrupts = <0 0 46>;
+		 #address-cells=<1>;
+		 #size-cells = <0>;
+		 clocks=<&refclk25mhz>;
+		 reg = <0 0xf001e000 0 0x1000>;
+	   	 interrupt-parent = <&mpic>;
+		 status ="ok";
+
+		nt99141@0x2a {
+			compatible = "nt99141,camera";
+			reset-gpios = <&gpio0 2 1>;
+                        pwdw-gpios = <&gpio0 3 1>;
+			res =<0x12>;
+			reg = <0x2a>;
+
+			port@0{
+				nt99141:endpoint{
+					res =<0x44>;
+					remote-endpoint = <&port0_2>;
+					};
+			};
+		};
+
+		cs5353: cs5353@3a{
+			compatible="cccssss";
+			reg=<0x3a>;
+		};
+
+	};
+	i2c4:i2c@F001f000 {
+		compatible = "gpt,i2c0.3";
+		interrupts = <0 0 47>;
+		#address-cells=<1>;
+		#size-cells = <0>;
+		reg = <0 0xf001f000 0 0x1000>;
+/*		clocks = <&sysctrl GPT_CHIP2CHASE_APB>;*/
+	/*clocks=<&refclk25mhz>;*/
+		interrupt-parent = <&mpic>;
+		status ="ok";
+	  };
+
+
+	spi1:spi@F0018000 {
+		compatible = "gpt,spi0.0";
+		interrupts = <0 0 28>;
+		#address-cells=<1>;
+		#size-cells = <1>;
+		reg = <0 0xf0018000 0 0x1000>;
+		/*clocks = <&sysctrl GPT_CHIP2CHASE_APB>;*/
+	  /*clocks=<&refclk25mhz>;*/
+		interrupt-parent = <&mpic>;
+		gpt,num-ss-bits = <2>;
+		gpt,num-transfer-bits = <0x08>;
+		status ="ok";
+
+		at25df081a@0x0{
+			compatible ="at25df081a";
+			spi-max-frequency=<20000000>;
+			#address-cells=<1>;
+			#size-cells = <1>;
+			reg=<0 1>;
+
+			partition@0{
+				label ="U-BOOT";
+				reg=<0x0 0x20000>;
+				read-only;
+			};
+			partiton@20000{
+
+				label="kernel";
+				reg=<0x20000 0x30000>;
+			};
+
+		  };
+
+	};
+	spi2:spi@F0019000 {
+		compatible = "gpt,spi0.1";
+		interrupts = <0 0 29>;
+		#address-cells=<1>;
+		#size-cells = <0>;
+		reg = <0 0xf0019000 0 0x1000>;
+   /* clocks=<&refclk25mhz>;*/
+		interrupt-parent = <&mpic>;
+		gpt,num-ss-bits = <2>;
+		gpt,num-transfer-bits = <0x08>;
+		status ="ok";
+
+		spidev@0x0{
+		   compatible ="spidev";
+		   spi-max-frequency=<20000000>;
+		   reg=<0 1>;
+	          };
+	};
+
+	gpt_vcap@0 {
+		compatible = "";
+		name = "gpt_vcap";
+		card_name = "Polaris Vcap";
+		#address-cells=<1>;
+		#size-cells = <0>;
+		reg = <0 0xf0102000 0 0x1000 0 0xf0103000 0 0x1000 0 0xf0104000 0 0x1000>;
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 52>,< 0 0 53>,<0 0 48 >;
+		status ="ok";
+		port@0{/*vcap0*/
+			port0_1:adv7612@0{
+				remote-endpoint = <&adv7612>;
+				};
+			port0_2:nt99141@1{
+				remote-endpoint = <&nt99141>;
+			};
+		};
+		/*
+		port@1{
+			port1_1:endpoint@0{
+				remote-endpoint = <&adv7612>;
+				};
+			port1_2:endpoint@1{
+				remote-endpoint = <&nt99141>;
+			};
+		};
+		port@2{
+			port2_1:endpoint@0{
+				remote-endpoint = <&adv7612>;
+				};
+			port2_2:endpoint@1{
+				remote-endpoint = <&nt99141>;
+			};
+		};
+		*/
+	};
+	vidmem:vidmem@00000000c0000000 {
+		compatible = "gpt-vidmem,gpt";
+		reg = <0 0xc0000000 0 0x80000>;
+		status = "ok";
+	};
+
+/*
+	vcap0:vcap@F0102000 {
+		status ="ok";
+		compatible = "gpt,vcap0";
+		interrupts = <0 0 52>;
+		card_name = "Polaris Vcap0";
+		#address-cells=<1>;
+		#size-cells = <0>;
+		reg = <0 0xf0102000 0 0x1000>;
+		interrupt-parent = <&mpic>;
+	  };
+	vcap1:vcap@F0103000 {
+		compatible = "gpt,vcap1";
+		#address-cells=<1>;
+		#size-cells = <0>;
+		reg = <0 0xf0103000 0 0x1000>;
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 35>;
+		status ="ok";
+	  };
+	vcap2:vcap@F0104000 {
+		compatible = "gpt,vcap2";
+		#address-cells=<1>;
+		#size-cells = <0>;
+		reg = <0 0xf0104000 0 0x1000>;
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 30>;
+		status ="ok";
+	  };
+*/
+	intc: interrupt-controller@300060000 {
+		compatible = "xlnx,xps-intc-1.00.a";
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 0>;
+		#interrupt-cells = <2>;
+		interrupt-controller ;
+		reg = <3 0x00060000 0 0x2000>;
+		xlnx,kind-of-intr = <0x100>;
+		xlnx,num-intr-inputs = <0x20>;
+	};
+
+	gpt_i2s0: i2s@f0014000 {
+		compatible = "gpt,gpt-i2s0";
+		reg = <0 0xf0014000 0 0x1000>;
+		reset-names = "i2s";
+		status = "ok";
+	};
+
+	soc-audio {
+		compatible ="cs,sound";
+		i2s-controller = <&gpt_i2s0>;
+		model="ccss";
+		audio-routing = "heaphone jack","HPOUTR";
+		audio-codec = <&cs5353>;
+	};
+
+ axi_dma_ethernet: axi-dma@300050000 {
+		axistream-connected = <&eth0>;
+		axistream-control-connected = <&eth0>;
+		compatible = "xlnx,axi-dma-1.00.a";
+		interrupt-parent = <&intc>;
+		interrupts = < 0 IRQ_TYPE_LEVEL_HIGH >,< 1 IRQ_TYPE_LEVEL_HIGH >;
+		reg = <3 0x00050000 0 0x10000 >;
+	  	xlnx,dlytmr-resolution = <0x4e2>;
+		xlnx,enable-multi-channel = <0x0>;
+		xlnx,family = "gpt";
+		xlnx,generic = <0x1>;
+		xlnx,include-mm2s = <0x1>;
+		xlnx,include-mm2s-dre = <0x0>;
+		xlnx,include-mm2s-sf = <0x1>;
+		xlnx,include-s2mm = <0x1>;
+		xlnx,include-s2mm-dre = <0x0>;
+		xlnx,include-s2mm-sf = <0x1>;
+    		xlnx,instance = "AXI_DMA_Ethernet";
+		xlnx,mm2s-burst-size = <0x10>;
+		xlnx,num-mm2s-channels = <0x1>;
+		xlnx,num-s2mm-channels = <0x1>;
+		xlnx,prmry-is-aclk-async = <0x0>;
+		xlnx,s2mm-burst-size = <0x10>;
+		xlnx,sg-include-desc-queue = <0x0>;
+		xlnx,sg-length-width = <0x0>;
+		xlnx,sg-use-stsapp-length = <0x0>;
+		status = "ok";
+		dma-channels@300050000 {
+			compatible = "xlnx,axi-dma-mm2s-channel";
+			interrupts = <0 IRQ_TYPE_LEVEL_HIGH >;
+			xlnx,datawidth = <0x20>;
+			xlnx,device-id = <0x0>;
+		};
+
+		dma-channels@300050030 {
+			compatible = "xlnx,axi-dma-s2mm-channel";
+			interrupts = <1 IRQ_TYPE_LEVEL_HIGH >;
+			xlnx,datawidth = <0x20>;
+			xlnx,device-id = <0x0>;
+		};
+	};
+
+	sdhci@f0110000 {
+		compatible = "gpt,arasan";
+		reg = <0 0xf0110000 0 0x10000>;
+
+		/*
+		clock-names = "gptsd";
+		clocks = <&sysctrl GPT_CHIP2POLARIS_SD_DIV>;
+		*/
+
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 61>;
+		bus-width = <4>;
+		max-frequency = <50000000>;
+	/*sdhci,auto-cmd12;*/
+	};
+
+	eth0:ethernet@300000000 {
+		axistream-connected = <&axi_dma_ethernet>;
+		axistream-control-connected = <&axi_dma_ethernet>;
+/*		clocks = <&sysctrl GPT_CHIP2CHASE_APB>;*/
+/*		clocks = <&refclk25mhz>;
+		clock-names = "apb_pclk";
+		clock-frequency = <25000000>;*/
+		compatible = "xlnx,axi-ethernet-1.00.a";
+		device_type = "network";
+		interrupt-parent = <&intc>;
+		interrupts = <2 IRQ_TYPE_LEVEL_HIGH >;
+    		//local-mac-address = [ 20 00 00 F0 F1 F1 ];      /****178***/
+    		local-mac-address = [ 20 00 00 F0 F1 F2 ];      /****179***/
+    		//local-mac-address = [ 20 00 00 FF FF FF ];      /****180***/
+		reg = < 3 0x00000000 0 0x40000>;
+		xlnx,phy-type = <0x3>;
+	  	xlnx,phyaddr = <0x0>;
+		xlnx,rxcsum = <0x0>;
+		xlnx,rxmem = <0x4000>;
+		xlnx,txcsum = <0x0>;
+		xlnx,txmem = <0x4000>;
+		phy-mode = "rgmii";
+		phy-handle = <&phy0>;
+		mdio {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			phy0: phy@0 {
+				compatible = "marvell,88e1510";
+				device_type = "ethernet-phy";
+				reg = <0>;
+			};
+		};
+	};
+};

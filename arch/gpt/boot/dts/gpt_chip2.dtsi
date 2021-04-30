@@ -1,0 +1,91 @@
+/*
+ * dts file for GPT Chip2 SOC
+ *
+ * Copyright (C) 2018, General Processor Techologies Inc.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ */
+
+/ {
+	compatible = "gpt,chip2-soc";
+	#address-cells = <2>;
+	#size-cells = <2>;
+
+	cpus {
+		#address-cells = <2>;
+		#size-cells = <0>;
+
+		cpu-map {
+			group0 {
+				core0 {
+					cpu = <&CPU0>;
+				};
+				core1 {
+					cpu = <&CPU1>;
+				};
+				core2 {
+					cpu = <&CPU2>;
+				};
+				core3 {
+					cpu = <&CPU3>;
+				};
+			};
+		};
+
+		CPU0: cpu@0 {
+			device_type = "cpu";
+			compatible = "gpt,chip2";
+			reg = <0 0x000>;
+ 		};
+		CPU1: cpu@1 {
+			device_type = "cpu";
+			compatible = "gpt,chip2";
+			reg = <0 0x001>;
+		};
+		CPU2: cpu@2 {
+			device_type = "cpu";
+			compatible = "gpt,chip2";
+			reg = <0 0x002>;
+		};
+		CPU3: cpu@3 {
+			device_type = "cpu";
+			compatible = "gpt,chip2";
+			reg = <0 0x003>;
+		};
+	};
+	
+        sysctrl: system-ctrl@F0000000 {
+                compatible = "gpt,sysctrl";
+                reg = <0 0xF0000000 0 0x200>;
+                #clock-cells = <1>;
+        };
+
+	/*
+	 * GPT PIC is built into CPU and accessed via special purpose
+	 * registers.  It is not addressable and, hence, has no 'reg'
+	 * property.
+	 */
+	pic: interrupt-controller {
+		compatible = "gpt,gpt-pic";
+		#interrupt-cells = <1>;
+		interrupt-controller;
+	};
+
+	timer {
+		compatible = "gpt,gpt-timer";
+		interrupt-parent = <&pic>;
+		interrupts = <3>;
+	};
+
+	mpic: interrupt-controller@f0007000 {
+		compatible = "gpt,gpt-mpic";
+		/* interrupt-parent = <&pic>; */
+		interrupts = <46>, <47>, <38>, <39>, <40>, <41>, <42>;     /* fiq, irq, sgis... */
+		#interrupt-cells = <3>; /* cpuno, type(0:irq,1:fiq), irqno */
+		interrupt-controller;
+		reg = <0 0xf0007000 0 0x1000>;
+	};
+};

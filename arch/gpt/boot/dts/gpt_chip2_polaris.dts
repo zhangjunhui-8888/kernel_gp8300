@@ -1,0 +1,106 @@
+/*
+ * dts file for GPT Chip2
+ *
+ * Copyright (C) 2018, General Processor Techologies Inc.
+ *
+ * This program is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation; either version 2 of
+ * the License, or (at your option) any later version.
+ */
+ 
+/dts-v1/;
+#include <dt-bindings/interrupt-controller/irq.h>
+/include/ "gpt_chip2.dtsi"
+#include <dt-bindings/clock/gpt,chip2polaris-clock.h>
+
+/ {
+	compatible = "gpt,polaris","gpt,polaris";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	interrupt-parent = <&pic>;
+
+	chosen {
+	};
+
+	memory@0 {
+		device_type = "memory";
+		reg = <0x2 0x00000000 0x1 0x00000000>;
+	};
+
+        reserved-memory {
+                #address-cells = <2>;
+                #size-cells = <2>;
+                ranges;
+
+                smpboot@200000000 {
+                        reg = <0x2 0x00000000 0 0x8000>;
+                        no-map;
+                };
+                debugport@200008000 {
+                        reg = <0x2 0x00008000 0 0x8000>;
+                        no-map;
+                };
+        };
+
+        /* On-chip memory */
+        ocram: ocram@20000000 {
+                compatible = "mmio-sram";
+                reg = <0x0 0x20000000 0x0 0x800000>;
+        };
+
+        sram@f0106000 {
+                compatible = "gpt,sram";
+                reg = <0x0 0xf0106000 0x0 0x1000>;
+                ocram = <&ocram>;
+        };
+
+	serial0: serial@F0010000 {
+		compatible = "gpt,pl011";
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 16>;
+		reg = <0 0xf0010000 0 0x1000>;
+		clocks = <&sysctrl GPT_CHIP2POLARIS_APIU_DIV>;
+		status = "ok";
+	};
+
+	timer0: timer@F00016000 {
+		compatible = "gpt,gpt-global-timer";
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 32>;
+		reg = <0 0xf0016000 0 0x100>;
+		clocks = <&sysctrl GPT_CHIP2POLARIS_APIU_DIV>;
+		status = "ok";
+	};
+
+	gpio0:gpio@F0008000 {
+	           compatible = "gpt-gpio-0.0";
+	           interrupts = <0 0 0>,<0 0 1>,<0 0 2>,
+                               <0 0 3>;
+	           gpio-controller;
+	           #gpio-cells = <2>;
+	           reg = <0 0xf0008000 0 0x4000>;
+		   clocks = <&sysctrl GPT_CHIP2POLARIS_APIU_DIV>;
+	           gpt,ngpio = <0x20>;
+	           gpt,base = <0x1>;
+	           interrupt-parent = <&mpic>;
+	           interrupt-controller;
+	           #interrupt-cells = <2>; 
+	           status ="ok";
+       };
+
+	sdhci@f0110000 {
+		compatible = "gpt,sdhci-8.9a";
+		reg = <0 0xf0110000 0 0x10000>;
+		
+		clock-names = "gptsd";
+		clocks = <&sysctrl GPT_CHIP2POLARIS_SD_DIV>;
+		
+		interrupt-parent = <&mpic>;
+		interrupts = <0 0 61>;
+		bus-width = <1>;
+		max-frequency = <163000000>;
+	/*sdhci,auto-cmd12;*/
+	};
+
+};

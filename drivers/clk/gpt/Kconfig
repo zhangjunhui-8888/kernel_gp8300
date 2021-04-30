@@ -1,0 +1,17 @@
+config COMMON_GPT_CHIP2_SIM
+	bool "GPT Chip2 Simulator clock Driver"
+	depends on PLAT_GPT_CHIP2_SIM
+	help
+	  Build the clock driver for chip2 simulator.
+
+config COMMON_GPT_CHIP2_CHASE
+	bool "GPT Chip2 Chase Clock Driver"
+	depends on PLAT_GPT_CHIP2_CHASE
+	help
+	  Build the clock driver for chip2 Chase board.
+
+config COMMON_GPT_CHIP2_POLARIS
+        bool "GPT Chip2 Polaris Clock Driver"
+        depends on PLAT_GPT_CHIP2_POLARIS
+        help
+          Build the clock driver for chip2 Polaris board.

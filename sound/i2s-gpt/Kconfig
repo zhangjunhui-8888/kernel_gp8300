@@ -1,0 +1,11 @@
+config I2S_GPT
+	tristate "GPT I2S Core Driver"
+	help
+	  Say Y or M if you want to add support for codecs attached to the
+	  GPT I2S interface. You will also need to select the individual
+	  machine drivers to support below.
+config I2S_DEV
+	tristate "I2S Device Driver"
+	help
+	  Say Y or M if you want to add support of codecs driver for cs4334 and cs5343. 
+

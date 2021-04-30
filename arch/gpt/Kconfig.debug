@@ -1,0 +1,33 @@
+menu "Kernel hacking"
+
+config GPT_SIMULATOR_ERRTA1
+        bool
+        default n
+        help
+          Do not use IDLE instruction in _do_cpu_idle.
+
+config GPT_SIMULATOR_ERRTA2
+        bool
+        default n
+        help
+          Do global register initialization on gpt-sim.
+
+config GPT_SIMULATOR_ERRTA3
+        bool
+        default n
+        help
+	  Use XRA/XSA to emulate cpu reset on gpt-sim.
+
+config TRACE_IRQFLAGS_SUPPORT
+	bool
+	default y
+
+config DBG_MONITOR
+	bool "Debug monitor for kernel"
+	default y
+	help
+	Enables debug monitor support in the kernel.
+
+source "lib/Kconfig.debug"
+
+endmenu

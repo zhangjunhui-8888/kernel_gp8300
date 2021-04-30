@@ -1,0 +1,12 @@
+#! /bin/sh
+
+/bin/mount -a
+echo "mount done!"
+/bin/mount
+echo /sbin/mdev > /proc/sys/kernel/hotplug
+#mount -t tmpfs -o size=64k,mode=0755 tmpfs /dev
+mkdir /dev/pts
+mount -t devpts devpts /dev/pts
+mkdir -p /dev/shm && mount -t tmpfs none /dev/shm &
+mdev -s
+#./home/vcaptest -d /dev/video0 -t 1000 -r 720P

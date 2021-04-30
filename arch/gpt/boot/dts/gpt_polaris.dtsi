@@ -1,0 +1,83 @@
+/ {
+	compatible = "gpt,fpga", "gpt,polaris";
+	#address-cells = <2>;
+	#size-cells = <2>;
+	interrupt-parent = <&pic>;
+
+	cpus {
+		#address-cells = <2>;
+		#size-cells = <0>;
+
+		cpu-map {
+			group0 {
+				core0 {
+					cpu = <&CPU0>;
+				};
+				core1 {
+					cpu = <&CPU1>;
+				};
+				core2 {
+					cpu = <&CPU2>;
+				};
+				core3 {
+					cpu = <&CPU3>;
+				};
+			};
+		};
+
+		CPU0: cpu@0 {
+			device_type = "cpu";
+			compatible = "gpt,gpt64";
+			reg = <0 0x000>;
+		};
+		CPU1: cpu@1 {
+			device_type = "cpu";
+			compatible = "gpt,gpt64";
+			reg = <0 0x001>;
+		};
+		CPU2: cpu@2 {
+			device_type = "cpu";
+			compatible = "gpt,gpt64";
+			reg = <0 0x002>;
+		};
+		CPU3: cpu@3 {
+			device_type = "cpu";
+			compatible = "gpt,gpt64";
+			reg = <0 0x003>;
+		};
+	};
+
+	sysctrl: system-ctrl@F0000000 {
+		compatible = "gpt,sysctrl";
+		reg = <0 0xF0000000 0 0x2C>;
+		#clock-cell = <1>;
+	};
+
+	pic: interrupt-controller {
+		compatible = "gpt,gpt-pic";
+		#interrupt-cells = <1>;
+		interrupt-controller;
+	};
+	refclk25mhz: refclk25mhz {
+                compatible = "fixed-clock";
+                #clock-cells = <0>;
+                clock-frequency = <25000000>;
+                clock-output-names = "apb_pclk";
+        };
+
+
+	timer {
+		compatible = "gpt,gpt-timer";
+		interrupt-parrent = <&pic>;
+		interrupts = <3>;
+	};
+
+	mpic: interrupt-controller@f0007000 {
+		compatible = "gpt,gpt-mpic";
+		interrupt-parent = <&pic>;
+		interrupts = <46>, <47>;    /* fiq, irq */
+		#interrupt-cells = <3>;/* cpuno, type(0:irq,1:fiq), irqno */
+		interrupt-controller;
+		reg = <0 0xf0007000 0 0x1000>;
+	};
+};
